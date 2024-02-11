@@ -108,7 +108,7 @@ def train():
     game = SnakeGameAI()
 
     while True:
-        state = agent.get_state()
+        state = agent.get_state(game)
         move = agent.get_action(state)
 
         reward, done, score = game.play_step(move)
@@ -136,5 +136,5 @@ def train():
         
 
 
-if __name__ == '__name__':
+if __name__ == '__main__':
     train()
