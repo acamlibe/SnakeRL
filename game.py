@@ -19,18 +19,19 @@ Point = namedtuple('Point', 'x, y')
 # rgb colors
 WHITE = (255, 255, 255)
 RED = (200,0,0)
-BLUE1 = (0, 0, 255)
-BLUE2 = (0, 100, 255)
+GREEN1 = (0, 255, 0)
+GREEN2 = (60, 171, 63)
+HEAD = (40, 176, 140)
 BLACK = (0,0,0)
 
 BLOCK_SIZE = 20
-SPEED = 100
+SPEED = 600
 
 CLOCK_WISE = [Direction.RIGHT, Direction.DOWN, Direction.LEFT, Direction.UP]
 
 class SnakeGameAI:
     
-    def __init__(self, w=640, h=480):
+    def __init__(self, w=1280, h=720):
         self.w = w
         self.h = h
         # init display
@@ -90,6 +91,7 @@ class SnakeGameAI:
             reward = 10
             self._place_food()
         else:
+            reward = -0.05
             self.snake.pop()
         
         # 5. update ui and clock
@@ -113,14 +115,17 @@ class SnakeGameAI:
         
     def _update_ui(self):
         self.display.fill(BLACK)
-        
+        is_head = False
         for pt in self.snake:
-            pygame.draw.rect(self.display, BLUE1, pygame.Rect(pt.x, pt.y, BLOCK_SIZE, BLOCK_SIZE))
-            pygame.draw.rect(self.display, BLUE2, pygame.Rect(pt.x+4, pt.y+4, 12, 12))
+            if is_head:
+                pygame.draw.rect(self.display, WHITE, pygame.Rect(pt.x, pt.y, BLOCK_SIZE, BLOCK_SIZE))
+            else:
+                pygame.draw.rect(self.display, HEAD, pygame.Rect(pt.x, pt.y, BLOCK_SIZE, BLOCK_SIZE))
+            is_head = True
             
         pygame.draw.rect(self.display, RED, pygame.Rect(self.food.x, self.food.y, BLOCK_SIZE, BLOCK_SIZE))
         
-        text = font.render("Score: " + str(self.score), True, WHITE)
+        text = font.render("Score: " + str(self.score) + " Length: " + str(len(self.snake)), True, WHITE)
         self.display.blit(text, [0, 0])
         pygame.display.flip()
         

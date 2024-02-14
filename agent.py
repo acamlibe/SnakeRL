@@ -7,7 +7,7 @@ from game import SnakeGameAI, Direction, Point, BLOCK_SIZE
 from model import Linear_QNet, QTrainer
 from helper import plot
 
-MAX_MEMORY = 100_000
+MAX_MEMORY = 200_000
 BATCH_SIZE = 1000
 LEARNING_RATE = 0.001
 
@@ -18,11 +18,13 @@ class Agent:
         self.gamma = 0.9 # discount rate
         self.memory = deque(maxlen=MAX_MEMORY) # popleft()
         # TODO: model, trainer
-        self.model = Linear_QNet(input_size=11, hidden_size=256, output_size=3)
+        self.model = Linear_QNet(input_size=21, hidden_size=350, output_size=3)
         self.trainer = QTrainer(self.model, learning_rate=LEARNING_RATE, gamma=self.gamma)
 
     def get_state(self, game):
         head = game.snake[0]
+        tail = game.snake[-1]
+        middle = game.snake[len(game.snake) // 2]
         point_left = Point(head.x - BLOCK_SIZE, head.y)
         point_right = Point(head.x + BLOCK_SIZE, head.y)
         point_up = Point(head.x, head.y - BLOCK_SIZE)
@@ -44,7 +46,7 @@ class Agent:
             (dir_left and game.is_collision(point_up)) or
             (dir_right and game.is_collision(point_down)) or
             (dir_up and game.is_collision(point_right)) or
-            (dir_down and game.is_collision(point_up)),
+            (dir_down and game.is_collision(point_left)),
 
             # Danger Left
             (dir_left and game.is_collision(point_down)) or
@@ -64,7 +66,6 @@ class Agent:
             game.food.y < game.head.y,
             game.food.y > game.head.y
         ]
-    
         return np.array(state, dtype=int)
     
 
