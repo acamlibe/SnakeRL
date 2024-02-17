@@ -1,30 +1,30 @@
-import torch
+from collections import deque
 import random
+import torch
 import numpy as np
 
-from collections import deque
 from game import SnakeGameAI, Direction, Point, BLOCK_SIZE
 from model import Linear_QNet, QTrainer
-from helper import plot
+from plot import plot
 
 MAX_MEMORY = 200_000
 BATCH_SIZE = 1000
 LEARNING_RATE = 0.001
+
+NUM_EXPLORATION_GAMES = 80
+HIDDEN_LAYER_NEURONS = 350
 
 class Agent:
     def __init__(self):
         self.num_games = 0
         self.epsilon = 0 # randomness
         self.gamma = 0.9 # discount rate
-        self.memory = deque(maxlen=MAX_MEMORY) # popleft()
-        # TODO: model, trainer
-        self.model = Linear_QNet(input_size=21, hidden_size=350, output_size=3)
+        self.memory = deque(maxlen=MAX_MEMORY)
+        self.model = Linear_QNet(input_size=11, hidden_size=HIDDEN_LAYER_NEURONS, output_size=3)
         self.trainer = QTrainer(self.model, learning_rate=LEARNING_RATE, gamma=self.gamma)
 
     def get_state(self, game):
         head = game.snake[0]
-        tail = game.snake[-1]
-        middle = game.snake[len(game.snake) // 2]
         point_left = Point(head.x - BLOCK_SIZE, head.y)
         point_right = Point(head.x + BLOCK_SIZE, head.y)
         point_up = Point(head.x, head.y - BLOCK_SIZE)
@@ -67,7 +67,7 @@ class Agent:
             game.food.y > game.head.y
         ]
         return np.array(state, dtype=int)
-    
+
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
@@ -86,7 +86,7 @@ class Agent:
 
     def get_action(self, state):
         # Random moves: tradeoff between exploration and exploitation
-        self.epsilon = 80 - self.num_games
+        self.epsilon = NUM_EXPLORATION_GAMES - self.num_games
         final_move = [0, 0, 0]
         if random.randint(0, 200) < self.epsilon:
             move = random.randint(0, 2)
@@ -100,8 +100,8 @@ class Agent:
         return final_move
 
 def train():
-    plot_scores = []
-    plot_mean_scores = []
+    scores = []
+    mean_scores = []
     total_score = 0
     record = 0
 
@@ -125,17 +125,14 @@ def train():
 
             if score > record:
                 record = score
-                agent.model.save()
 
             print('Game:', agent.num_games, 'Score:', score, 'Record:', record)
 
-            plot_scores.append(score)
+            scores.append(score)
             total_score += score
             mean_score = total_score / agent.num_games
-            plot_mean_scores.append(mean_score)
-            plot(plot_scores, plot_mean_scores)
-        
-
+            mean_scores.append(mean_score)
+            plot(scores, mean_scores)       
 
 if __name__ == '__main__':
     train()

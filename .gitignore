@@ -2,4 +2,3 @@ __pycache__/
 venv/
 snakevenv/
 .DS_Store
-model/
